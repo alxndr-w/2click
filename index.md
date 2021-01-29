@@ -1,37 +1,111 @@
-## Welcome to GitHub Pages
+# 2Click-Privacy
 
-You can use the [editor on GitHub](https://github.com/alxndr-w/2click/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+Eine einfache Möglichkeit, externe Inhalte durch eine 2-Klick-Lösung nachzuladen, z.B. iframes (Youtube, Google Maps, ...) oder andere Elemente (Tweets, Instagram Posts, ...)
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+Mit Dank an [2Click-Iframe-Privacy](https://01-scripts.github.io/2Click-Iframe-Privacy/)
 
-### Markdown
+## Standalone-Fassung
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+**Skript einfügen**
 
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+```html
+<script src="2ClickPrivacy.min.js"></script>
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+**CSS-Code für das Overlay festlegen**
 
-### Jekyll Themes
+```html
+    <style type="text/css">
+        div.privacy-msg {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            top: 0;
+            margin: 0;
+        }
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/alxndr-w/2click/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+        div.privacy-msg p {
+            position: absolute;
+            background-image: none; /* optional: eigenes Vorschaubild verwenden */
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 12px;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            top: 0;
+            margin: 0;
+            z-index: 1;
+        }
 
-### Support or Contact
+        div.privacy-msg p,
+        div.privacy-msg label {
+            color: white;
+        }
+    </style>
+```
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+**Konfiguration und Instanziieren**
+
+```html
+    <script type="text/javascript">
+        function init_google_maps() {
+            alert("Callback google maps ausgeführt");
+        }
+
+        function init_twitter() {
+            var d = document, t = 'script',
+            o = d.createElement(t),
+            s = d.getElementsByTagName(t)[0];
+            o.src = "https://platform.twitter.com/widgets.js";
+            s.parentNode.insertBefore(o, s);
+        }
+
+        var _2ClickConfig = {
+            enableCookies: true,
+            useSessionCookie: true,
+            cookieNamespace: 'dsgvo_',
+            privacyPolicyUrl: '<?= rex_getUrl(rex_config::get('across/dsgvo', 'consent_url')); ?>',
+            CustomTypes: Array({
+                type: 'google_maps',
+                class: 'google_maps',
+                callback: 'init_google_maps',
+                description: 'Please enter a text to show before loading the content<br />'
+            }, {
+                type: 'twitter',
+                class: 'twitter',
+                callback: 'init_twitter',
+                description: 'Please enter a text to show before loading the content<br />'
+            })
+
+        };
+        document.addEventListener('DOMContentLoaded', _2ClickPrivacy.init(_2ClickConfig));
+    </script>
+```
+
+# Anwendung
+
+## iframe
+
+Verschiebe den Inhalt von `src=` nach `data-src=` und füge ein leeres Attribut `src=""` hinzu.
+
+
+```html
+<iframe data-2click-type="google_maps" style="width: 100%; height: 600px;"
+    data-src="https://www.youtube-nocookie.com/embed/oHg5SJYRHA0"
+    frameborder="0" scrolling="no" allow="autoplay; encrypted-media" allowfullscreen>
+</iframe>
+```
+
+## beliebiges Element
+
+Zum Beispiel Twitter: 
+
+```html
+<div data-2click-type="twitter" style="width: 100%; height: 600px;">
+    <blockquote class="twitter-tweet">
+        <p lang="en" dir="ltr">Sorry losers and haters, but my I.Q. is one of the highest -and you all know it! Please don&#39;t feel so stupid or insecure,it&#39;s not your fault</p>&mdash; Donald J. Trump (@realDonaldTrump) 
+        <a href="https://twitter.com/realDonaldTrump/status/332308211321425920?ref_src=twsrc%5Etfw">May 9, 2013</a></blockquote>
+    <!-- Script-Bereich entfernen und stattdessen in den Callback legen -->
+</div>
+```
