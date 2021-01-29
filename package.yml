@@ -1,0 +1,18 @@
+package: 2click
+
+version: '0.1.2-dev'
+author: 'alex+ Informationsdesign'
+supportpage: https://www.alexplus.de/
+load: late
+
+requires:
+    php:
+        version: '>5.6,<9'
+    redaxo: ^5.5
+
+page:
+    hidden: true
+    title: translate:2click_docs
+    subPath: README.md
+    icon: rex-icon fa-info-circle
+    perm: 2click[]
